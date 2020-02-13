@@ -20,27 +20,38 @@ import com.example.chatu.chat.ChatArgs
 import com.example.chatu.database.ChatMessage
 import com.example.chatu.database.ChatUDatabase
 import com.example.chatu.databinding.FragmentChatBinding
+import com.google.firebase.database.*
 
 /**
  * A simple [Fragment] subclass.
  */
 class Chat : Fragment() {
 
+    private lateinit var firebaseDatabase: FirebaseDatabase
+    private lateinit var DatabaseRef: DatabaseReference
+    private var lastValueEventListener: ChildEventListener? = null
+
+    private lateinit var viewModel: ChatViewModel
+    private lateinit var uid: String
+    private lateinit var myUid: String
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
+        firebaseDatabase = FirebaseDatabase.getInstance()
+        DatabaseRef = firebaseDatabase.reference
         val name = ChatArgs.fromBundle(arguments!!).name
-        val uid = ChatArgs.fromBundle(arguments!!).uid
-        val myUid = ChatArgs.fromBundle(arguments!!).myUid
+        uid = ChatArgs.fromBundle(arguments!!).uid
+        myUid = ChatArgs.fromBundle(arguments!!).myUid
         val binding = FragmentChatBinding.inflate(inflater,container,false)
         (activity as AppCompatActivity).setSupportActionBar(binding.chatToolBar)
         binding.chatToolBar.title = "$name (${uid})"
 
         val messageDao = ChatUDatabase.getInstance(requireNotNull(activity!!)).chatMessageDao
         val viewModelFactory = ChatViewModelFactory(messageDao,myUid,uid)
-        val viewModel = ViewModelProviders.of(this,viewModelFactory).get(ChatViewModel::class.java)
+        viewModel = ViewModelProviders.of(this,viewModelFactory).get(ChatViewModel::class.java)
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
 
@@ -82,7 +93,7 @@ class Chat : Fragment() {
                 binding.stickerCancel.visibility = View.GONE
             }
         })
-        viewModel.clearMessage()
+        //viewModel.clearMessage()
         return binding.root
     }
 
@@ -91,4 +102,37 @@ class Chat : Fragment() {
         super.onCreate(savedInstanceState)
     }
 
+    private fun attachDatabaseLastListener() {
+        if(lastValueEventListener == null) {
+            lastValueEventListener = object: ChildEventListener {
+                override fun onCancelled(p0: DatabaseError) {}
+                override fun onChildMoved(p0: DataSnapshot, p1: String?) {}
+                override fun onChildChanged(p0: DataSnapshot, p1: String?) {}
+                override fun onChildAdded(p0: DataSnapshot, p1: String?) {
+                    val message = p0.getValue(ChatMessage::class.java)
+                    if(message!!.from_uid == uid && message.to_uid == myUid) {
+                        if(!message.read) {
+                            p0.ref.child("read").setValue(true)
+                            viewModel.getMessage(message)
+                        }
+                    }
+                }
+                override fun onChildRemoved(p0: DataSnapshot) {}
+            }
+            DatabaseRef.child("chats").addChildEventListener(lastValueEventListener as ChildEventListener)
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        attachDatabaseLastListener()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if(lastValueEventListener != null) {
+            DatabaseRef.child("chats").removeEventListener(lastValueEventListener!!)
+            lastValueEventListener = null
+        }
+    }
 }

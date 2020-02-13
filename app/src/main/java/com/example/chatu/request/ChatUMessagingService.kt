@@ -17,12 +17,9 @@ import kotlinx.coroutines.withContext
 
 class ChatUMessagingService: FirebaseMessagingService() {
 
-    private val coroutineScope = CoroutineScope(Dispatchers.Main)
-    private lateinit var messageDao: ChatMessageDao
     private lateinit var broadcastManager: LocalBroadcastManager
     override fun onCreate() {
         super.onCreate()
-        messageDao = ChatUDatabase.getInstance(applicationContext).chatMessageDao
         broadcastManager = LocalBroadcastManager.getInstance(applicationContext)
     }
 
@@ -35,12 +32,6 @@ class ChatUMessagingService: FirebaseMessagingService() {
                     val sharedPref: SharedPreferences = applicationContext.getSharedPreferences("ChatU",0)
                     sharedPref.edit().putString("uid", data["uid"]).putString("token", data["token"]).apply()
                 }
-                "message" -> {
-                    coroutineScope.launch {
-                        val message = ChatMessage(null,data["from_uid"]!!,data["to_uid"]!!,data["type"]!!,data["content"]!!,data["time"]!!)
-                        insertMessage(message)
-                    }
-                }
                 "find" -> {
                     findResultBroadcast(data["to_uid"],data["name"])
                 }
@@ -51,12 +42,6 @@ class ChatUMessagingService: FirebaseMessagingService() {
                     replyBroadcast(Invitation(data["time"]!!,data["from_uid"]!!,data["to_uid"]!!,data["name"]!!,data["answer"]))
                 }
             }
-        }
-    }
-
-    private suspend fun insertMessage(message: ChatMessage) {
-        withContext(Dispatchers.IO) {
-            messageDao.insert(message)
         }
     }
 
@@ -74,7 +59,6 @@ class ChatUMessagingService: FirebaseMessagingService() {
     }
 
     private fun replyBroadcast(reply: Invitation) {
-        Log.i("Reply","reply")
         val intent = Intent("Reply")
         intent.putExtra("reply",reply)
         broadcastManager.sendBroadcast(intent)

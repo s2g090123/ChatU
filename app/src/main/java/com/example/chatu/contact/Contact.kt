@@ -60,7 +60,7 @@ class Contact : Fragment() {
         })
         viewModel.contactInfo.observe(this, Observer {
             it?.let {
-               findNavController().navigate(ContactDirections.actionFragmentContactToChat2(it[0],it[1],it[2]))
+                findNavController().navigate(ContactDirections.actionFragmentContactToChat2(it[0],it[1],it[2]))
                 viewModel.doneNavigating()
             }
         })
@@ -112,31 +112,31 @@ class Contact : Fragment() {
                 dialogViewBinding.searchButton.setOnClickListener {
                     val uid = dialogViewBinding.findFriendEdit.text.toString()
                     if(uid.isNotEmpty()) {
+                        dialogViewBinding.findResult.visibility = View.GONE
                         if (uid.length == 8) {
+                            dialogViewBinding.findFriendProgressbar.visibility = View.VISIBLE
                             viewModel.searchFriend(uid)
                         } else {
                             Toast.makeText(context, "輸入錯誤的UID格式", Toast.LENGTH_SHORT).show()
-                            dialogViewBinding.findResult.visibility = View.GONE
                         }
                     }
                 }
                 viewModel.searchName.observe(this, Observer {
+                    dialogViewBinding.findFriendProgressbar.visibility = View.GONE
                     when (it) {
                         "" -> {
                             Toast.makeText(context, "查無此人", Toast.LENGTH_SHORT).show()
                             dialogViewBinding.findResult.visibility = View.GONE
                         }
                         null -> dialogViewBinding.findResult.visibility = View.GONE
-                        else -> {
-                            Toast.makeText(context,"find",Toast.LENGTH_SHORT).show()
-                            dialogViewBinding.findResult.visibility = View.VISIBLE
-                        }
+                        else -> dialogViewBinding.findResult.visibility = View.VISIBLE
                     }
                 })
                 viewModel.addRequestClicked.observe(this, Observer {
                     it?.let {
                         viewModel.sendFriendRequest()
                         viewModel.doneSendFriendRequestClicked()
+                        Toast.makeText(context,"已傳送交友邀請",Toast.LENGTH_SHORT).show()
                     }
                     dialogViewBinding.findResult.visibility = View.GONE
                 })

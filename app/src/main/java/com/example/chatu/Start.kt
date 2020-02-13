@@ -35,6 +35,7 @@ class Start : Fragment() {
     lateinit var sharedPref: SharedPreferences
     lateinit var token: String
     val RC_SIGN_IN = 1
+    var delay = 2000L
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -63,6 +64,7 @@ class Start : Fragment() {
                 startToContact(user.displayName)
             }
             else {
+                delay = 5000L
                 startActivityForResult(AuthUI.getInstance().createSignInIntentBuilder().setIsSmartLockEnabled(false)
                     .setAvailableProviders(listOf(AuthUI.IdpConfig.EmailBuilder().build(),AuthUI.IdpConfig.GoogleBuilder().build()))
                     .build(),RC_SIGN_IN)
@@ -88,7 +90,7 @@ class Start : Fragment() {
         Handler().postDelayed({
             val uid = sharedPref.getString("uid","重新開啟應用程式")
             findNavController(this).navigate(StartDirections.actionStart2ToFragmentContact(name!!,uid))
-        },5000)
+        },delay)
     }
 
     private fun register(name: String?) {

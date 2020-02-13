@@ -38,6 +38,4 @@ class Register : Fragment() {
         })
         return binding.root
     }
-
-
 }

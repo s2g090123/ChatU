@@ -16,7 +16,8 @@ class ChatViewModel(private val messageDao: ChatMessageDao, myUid: String, uid: 
     private val coroutineScope = CoroutineScope(Dispatchers.Main + job)
 
     private val firebaseDatabase = FirebaseDatabase.getInstance()
-    private val databaseRef = firebaseDatabase.reference.child("requests")
+    private val databaseRef = firebaseDatabase.reference.child("chats")
+    private val requestRef = firebaseDatabase.reference.child("requests")
 
     private val _sendClicked = MutableLiveData<Boolean?>()
     val sendClicked: LiveData<Boolean?>
@@ -44,8 +45,14 @@ class ChatViewModel(private val messageDao: ChatMessageDao, myUid: String, uid: 
 
     fun sendMessage(message: ChatMessage) {
         coroutineScope.launch {
+            messageToServer(message)
             insert(message)
-            sendMessage_C2S(message)
+        }
+    }
+
+    fun getMessage(message: ChatMessage) {
+        coroutineScope.launch {
+            insert(message)
         }
     }
 
@@ -55,11 +62,9 @@ class ChatViewModel(private val messageDao: ChatMessageDao, myUid: String, uid: 
         }
     }
 
-    private suspend fun sendMessage_C2S(message: ChatMessage) {
-        withContext(Dispatchers.IO) {
-            val request = RequestMessage("message",message)
-            databaseRef.push().setValue(request)
-        }
+    private fun messageToServer(message: ChatMessage) {
+        requestRef.push().setValue(RequestMessage("message",message))
+        databaseRef.push().setValue(message)
     }
 
     override fun onCleared() {

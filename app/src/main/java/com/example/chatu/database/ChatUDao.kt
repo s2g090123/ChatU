@@ -1,14 +1,11 @@
 package com.example.chatu.database
 
 import androidx.lifecycle.LiveData
-import androidx.room.Dao
-import androidx.room.Delete
-import androidx.room.Insert
-import androidx.room.Query
+import androidx.room.*
 
 @Dao
 interface ChatMessageDao {
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insert(message: ChatMessage)
 
     @Query("Select * from chat_message_table where (from_uid= :me AND to_uid= :other) OR from_uid= :other")
@@ -23,7 +20,7 @@ interface ChatMessageDao {
 
 @Dao
 interface ContactDao {
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insert(contact: Contact)
 
     @Query("Select * from contact_table where uid= :uid")
@@ -38,7 +35,7 @@ interface ContactDao {
 
 @Dao
 interface InvitationDao {
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insert(invitation: Invitation)
 
     @Query("Select * from invitation_table where from_uid= :uid")
