@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "857974901356",
+    "firebase_url": "https://chatu-3abd7.firebaseio.com",
+    "project_id": "chatu-3abd7",
+    "storage_bucket": "chatu-3abd7.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:857974901356:android:2bdaf1a078e248da0ee649",
+        "android_client_info": {
+          "package_name": "com.example.chatu"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "857974901356-t87i0b3fnekq4f1lba4j7jd8ujs63iag.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.chatu",
+            "certificate_hash": "f0886f0e1418e32db9757e1167cd1a0768abfee2"
+          }
+        },
+        {
+          "client_id": "857974901356-u4q5ml9cr5rtml26k9g8b98qp0hlq02m.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB9XzTedHGXPGEQTpIKRrJyawRh2vrXqIY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "857974901356-u4q5ml9cr5rtml26k9g8b98qp0hlq02m.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/start2">
+
+    <fragment
+        android:id="@+id/fragment_register"
+        android:name="com.example.chatu.register.Register"
+        android:label="fragment_register"
+        tools:layout="@layout/fragment_register" >
+        <action
+            android:id="@+id/action_fragment_register_to_fragment_contact"
+            app:destination="@id/fragment_contact"
+            app:popUpTo="@+id/start2"
+            app:popUpToInclusive="true" />
+    </fragment>
+    <fragment
+        android:id="@+id/fragment_contact"
+        android:name="com.example.chatu.contact.Contact"
+        android:label="fragment_contact"
+        tools:layout="@layout/fragment_contact" >
+        <action
+            android:id="@+id/action_fragment_contact_to_chat2"
+            app:destination="@id/chat2" />
+        <argument
+            android:name="name"
+            app:argType="string" />
+        <argument
+            android:name="uid"
+            app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/chat2"
+        android:name="com.example.chatu.chat.Chat"
+        android:label="fragment_chat"
+        tools:layout="@layout/fragment_chat" >
+        <argument android:name="name"
+            app:argType="string" />
+        <argument
+            android:name="uid"
+            app:argType="string" />
+        <argument
+            android:name="myUid"
+            app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/start2"
+        android:name="com.example.chatu.Start"
+        android:label="fragment_start"
+        tools:layout="@layout/fragment_start" >
+        <action
+            android:id="@+id/action_start2_to_fragment_register"
+            app:destination="@id/fragment_register"
+            app:popUpTo="@+id/start2"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_start2_to_fragment_contact"
+            app:destination="@id/fragment_contact"
+            app:launchSingleTop="false"
+            app:popUpTo="@+id/start2"
+            app:popUpToInclusive="true" />
+    </fragment>
+</navigation>

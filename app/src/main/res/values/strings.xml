@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">ChatU</string>
+    <string name="welcome_text">歡迎回來, %s</string>
+    <string name="register_hint">決定你聊天的暱稱吧</string>
+    <string name="register_edit">輸入你的暱稱</string>
+    <string name="done">確定</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="find_friend">尋找朋友</string>
+    <string name="find_friend_hint">請輸入UID(8碼)</string>
+    <string name="invite_friend">好友邀請</string>
+</resources>

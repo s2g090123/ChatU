@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".chat.Chat">
+    <data>
+        <variable
+            name="viewModel"
+            type="com.example.chatu.chat.ChatViewModel" />
+    </data>
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/chat_tool_bar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:layout_constraintTop_toTopOf="parent"
+            android:elevation="4dp"
+            android:background="@color/contact_toolbar"/>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/chat_content"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:padding="@dimen/small_margin"
+            app:layout_constraintBottom_toTopOf="@+id/linearLayout"
+            app:layout_constraintTop_toBottomOf="@id/chat_tool_bar"
+            android:background="@color/background"/>
+
+        <LinearLayout
+            android:id="@+id/linearLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:background="@color/chat_editor"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <ImageView
+                android:id="@+id/imageView"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:src="@android:drawable/ic_input_add"
+                android:onClick="@{() -> viewModel.onStickerClicked()}"/>
+
+            <EditText
+                android:id="@+id/chat_edit"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="6"
+                android:inputType="textMultiLine|number|text" />
+
+            <Button
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@android:drawable/ic_menu_send"
+                android:onClick="@{() -> viewModel.onSendClicked()}"/>
+        </LinearLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/sticker_content"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:background="#cccccc"
+            app:layout_constraintTop_toBottomOf="@id/chat_tool_bar"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/sticker_cancel"
+            android:visibility="gone"/>
+        <Button
+            android:id="@+id/sticker_cancel"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:background="#00000000"
+            app:layout_constraintTop_toBottomOf="@id/sticker_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:onClick="@{() -> viewModel.doneStickerClicked()}"
+            android:visibility="gone"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

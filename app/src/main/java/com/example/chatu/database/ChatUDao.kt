@@ -1,0 +1,55 @@
+package com.example.chatu.database
+
+import androidx.lifecycle.LiveData
+import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.Query
+
+@Dao
+interface ChatMessageDao {
+    @Insert
+    fun insert(message: ChatMessage)
+
+    @Query("Select * from chat_message_table where (from_uid= :me AND to_uid= :other) OR from_uid= :other")
+    fun get(me: String, other: String): LiveData<List<ChatMessage>>
+
+    @Query("Select * from chat_message_table")
+    fun getAll(): LiveData<List<ChatMessage>>
+
+    @Query("Delete from chat_message_table")
+    fun clear()
+}
+
+@Dao
+interface ContactDao {
+    @Insert
+    fun insert(contact: Contact)
+
+    @Query("Select * from contact_table where uid= :uid")
+    fun get(uid: String): LiveData<Contact>
+
+    @Query("Select * from contact_table")
+    fun getAll(): LiveData<List<Contact>>
+
+    @Query("Delete from contact_table where uid = :uid")
+    fun delete(uid: String)
+}
+
+@Dao
+interface InvitationDao {
+    @Insert
+    fun insert(invitation: Invitation)
+
+    @Query("Select * from invitation_table where from_uid= :uid")
+    fun get(uid: String): LiveData<Invitation>
+
+    @Query("Select * from invitation_table ORDER BY invite_time")
+    fun getAll(): LiveData<List<Invitation>>
+
+    @Delete
+    fun delete(invitation: Invitation)
+
+    @Query("Delete from invitation_table")
+    fun clear()
+}

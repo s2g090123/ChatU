@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tool="http://schemas.android.com/tools">
+    <data>
+        <variable
+            name="invitation"
+            type="com.example.chatu.database.Invitation" />
+        <variable
+            name="addListener"
+            type="com.example.chatu.adapter.InvitationListener" />
+        <variable
+            name="cancelListener"
+            type="com.example.chatu.adapter.InvitationListener" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="wrap_content"
+        android:layout_height="25dp"
+        android:layout_marginTop="@dimen/small_margin">
+
+        <ImageView
+            android:id="@+id/invitation_icon"
+            android:layout_width="30dp"
+            android:layout_height="0dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:srcCompat="@android:drawable/sym_def_app_icon" />
+
+        <TextView
+            android:id="@+id/invitation_name"
+            android:layout_width="120dp"
+            android:layout_height="0dp"
+            android:gravity="center_vertical"
+            android:paddingStart="@dimen/small_margin"
+            android:paddingEnd="@dimen/small_margin"
+            android:text="@{invitation.name}"
+            android:textSize="@dimen/normal_text_size"
+            app:layout_constraintStart_toEndOf="@id/invitation_icon"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            tool:text="杜佳謙" />
+
+        <ImageView
+            android:id="@+id/invitation_add"
+            android:layout_width="30dp"
+            android:layout_height="0dp"
+            android:onClick="@{() -> addListener.onClick(invitation)}"
+            app:layout_constraintStart_toEndOf="@id/invitation_name"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginEnd="@dimen/small_margin"
+            app:srcCompat="@android:drawable/ic_input_add" />
+
+        <ImageView
+            android:id="@+id/invitation_cancel"
+            android:layout_width="30dp"
+            android:layout_height="0dp"
+            android:onClick="@{() -> cancelListener.onClick(invitation)}"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/invitation_add"
+            app:srcCompat="@android:drawable/ic_delete" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>
