@@ -16,6 +16,12 @@ interface ChatMessageDao {
 
     @Query("Delete from chat_message_table")
     fun clear()
+
+    @Query("SELECT COUNT(id) FROM chat_message_table")
+    fun getRowCount(): LiveData<Long>
+
+    @Query("Update CHAT_MESSAGE_TABLE Set read = 1 where tag = :tag")
+    fun update(tag: Long)
 }
 
 @Dao

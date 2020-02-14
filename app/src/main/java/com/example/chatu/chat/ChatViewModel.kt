@@ -1,5 +1,6 @@
 package com.example.chatu.chat
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -11,6 +12,7 @@ import kotlinx.coroutines.*
 
 class ChatViewModel(private val messageDao: ChatMessageDao, myUid: String, uid: String): ViewModel() {
     val messages = messageDao.get(myUid,uid)
+    val messageCount = messageDao.getRowCount()
 
     private val job = Job()
     private val coroutineScope = CoroutineScope(Dispatchers.Main + job)
@@ -81,6 +83,18 @@ class ChatViewModel(private val messageDao: ChatMessageDao, myUid: String, uid: 
     private suspend fun delete() {
         withContext(Dispatchers.IO) {
             messageDao.clear()
+        }
+    }
+
+    fun updateMessage(tag: Long) {
+        coroutineScope.launch {
+            update(tag)
+        }
+    }
+
+    private suspend fun update(tag: Long) {
+        withContext(Dispatchers.IO) {
+            messageDao.update(tag)
         }
     }
 }

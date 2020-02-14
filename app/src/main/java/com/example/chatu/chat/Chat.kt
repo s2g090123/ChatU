@@ -2,6 +2,8 @@ package com.example.chatu.chat
 
 
 import android.os.Bundle
+import android.util.Log
+import android.view.KeyEvent
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -34,6 +36,7 @@ class Chat : Fragment() {
     private lateinit var viewModel: ChatViewModel
     private lateinit var uid: String
     private lateinit var myUid: String
+    private var count = 0L
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -67,16 +70,27 @@ class Chat : Fragment() {
             it?.let {
                 val text = binding.chatEdit.text.toString()
                 if(text.isNotEmpty()) {
-                    val message = ChatMessage(null,myUid,uid,"0",text,System.currentTimeMillis().toString())
+                    val message = ChatMessage(null,count,myUid,uid,"0",text,System.currentTimeMillis().toString(),false)
                     viewModel.sendMessage(message)
                 }
                 binding.chatEdit.setText("")
                 viewModel.doneSendClicked()
             }
         })
+        binding.chatEdit.setOnKeyListener { _, keyCode, event ->
+            if(keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_UP) {
+                viewModel.onSendClicked()
+                return@setOnKeyListener true
+            }
+            false
+        }
+
+        viewModel.messageCount.observe(this, Observer {
+            count = it
+        })
 
         val stickerAdapter = StickerAdapter(StickerListener {
-            val message = ChatMessage(null,myUid,uid,"1",it.toString(),System.currentTimeMillis().toString())
+            val message = ChatMessage(null,count,myUid,uid,"1",it.toString(),System.currentTimeMillis().toString(),false)
             viewModel.sendMessage(message)
             viewModel.doneStickerClicked()
         })
@@ -93,7 +107,7 @@ class Chat : Fragment() {
                 binding.stickerCancel.visibility = View.GONE
             }
         })
-        //viewModel.clearMessage()
+        // viewModel.clearMessage()
         return binding.root
     }
 
@@ -107,9 +121,13 @@ class Chat : Fragment() {
             lastValueEventListener = object: ChildEventListener {
                 override fun onCancelled(p0: DatabaseError) {}
                 override fun onChildMoved(p0: DataSnapshot, p1: String?) {}
-                override fun onChildChanged(p0: DataSnapshot, p1: String?) {}
+                override fun onChildChanged(p0: DataSnapshot, p1: String?) {
+                    val message = p0.getValue(ChatMessage::class.java)
+                    if(message!!.from_uid == myUid && message.to_uid == uid && message.read) {
+                        viewModel.updateMessage(message.tag!!)
+                    }
+                }
                 override fun onChildAdded(p0: DataSnapshot, p1: String?) {
-
                     val message = p0.getValue(ChatMessage::class.java)
                     if(message!!.from_uid == uid && message.to_uid == myUid) {
                         if(!message.read) {
@@ -117,10 +135,15 @@ class Chat : Fragment() {
                             viewModel.getMessage(message)
                         }
                     }
+                    if(message!!.from_uid == myUid && message.to_uid == uid) {
+                        if(message.read) {
+                            viewModel.updateMessage(message.tag!!)
+                        }
+                    }
                 }
                 override fun onChildRemoved(p0: DataSnapshot) {}
             }
-            DatabaseRef.child("chats").addChildEventListener(lastValueEventListener as ChildEventListener)
+            DatabaseRef.child("chats").orderByKey().addChildEventListener(lastValueEventListener as ChildEventListener)
         }
     }
 

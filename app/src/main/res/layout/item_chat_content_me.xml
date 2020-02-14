@@ -35,5 +35,17 @@
             contentTime="@{message.time}"
             tools:text="12:00" />
 
+        <TextView
+            android:id="@+id/isRead_text"
+            android:layout_width="wrap_content"
+            android:layout_height="16dp"
+            android:alpha="0.5"
+            android:text="@string/isRead"
+            android:textSize="@dimen/small_text_size"
+            app:layout_constraintEnd_toEndOf="@id/content_time"
+            app:layout_constraintStart_toStartOf="@id/content_time"
+            app:layout_constraintBottom_toTopOf="@id/content_time"
+            android:visibility="gone"/>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

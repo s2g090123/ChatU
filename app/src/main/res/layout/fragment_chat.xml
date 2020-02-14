@@ -50,7 +50,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="6"
-                android:inputType="textMultiLine|number|text" />
+                android:inputType="text" />
 
             <Button
                 android:layout_width="0dp"

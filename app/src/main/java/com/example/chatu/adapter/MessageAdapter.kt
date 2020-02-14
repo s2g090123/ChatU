@@ -1,6 +1,7 @@
 package com.example.chatu.adapter
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -88,6 +89,9 @@ class MessageAdapter(private val myUid: String): ListAdapter<ChatMessage, Recycl
 
         fun bind(item: ChatMessage) {
             binding.message = item
+            if(item.read) {
+                binding.isReadText.visibility = View.VISIBLE
+            }
             binding.executePendingBindings()
         }
 
@@ -118,6 +122,9 @@ class MessageAdapter(private val myUid: String): ListAdapter<ChatMessage, Recycl
 
         fun bind(item: ChatMessage) {
             binding.message = item
+            if(item.read) {
+                binding.isReadText.visibility = View.VISIBLE
+            }
             binding.executePendingBindings()
         }
 

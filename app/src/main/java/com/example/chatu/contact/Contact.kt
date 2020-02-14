@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -35,6 +36,7 @@ class Contact : Fragment() {
     lateinit var viewModel: ContactViewModel
     lateinit var binding: FragmentContactBinding
     lateinit var broadcastManager: LocalBroadcastManager
+    var intentFilter: IntentFilter? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -72,10 +74,6 @@ class Contact : Fragment() {
             }
         })
 
-        val intentFilter = IntentFilter("Find")
-        intentFilter.addAction("Invitation")
-        intentFilter.addAction("Reply")
-        broadcastManager.registerReceiver(receiver,intentFilter)
         return binding.root
     }
 
@@ -85,9 +83,20 @@ class Contact : Fragment() {
         broadcastManager = LocalBroadcastManager.getInstance(requireNotNull(activity).application)
     }
 
-    override fun onStop() {
-        super.onStop()
-        broadcastManager.unregisterReceiver(receiver)
+    override fun onStart() {
+        super.onStart()
+        if(intentFilter == null) {
+            val intentFilter = IntentFilter("Find")
+            intentFilter.addAction("Invitation")
+            intentFilter.addAction("Reply")
+            broadcastManager.registerReceiver(receiver,intentFilter)
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if(intentFilter != null)
+            broadcastManager.unregisterReceiver(receiver)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
@@ -164,12 +173,6 @@ class Contact : Fragment() {
             when (intent?.action) {
                 "Find" -> {
                     viewModel.getFindFriendResult(intent.getStringExtra("uid"),intent.getStringExtra("name"))
-                }
-                "Invitation" -> {
-                    viewModel.addInvitation(intent.getParcelableExtra("invitation"))
-                }
-                "Reply" -> {
-                    viewModel.doInvitationReply(intent.getParcelableExtra("reply"))
                 }
             }
         }

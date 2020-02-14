@@ -32,5 +32,18 @@
             app:layout_constraintBottom_toBottomOf="parent"
             contentTime="@{message.time}"
             tools:text="12:00" />
+
+        <TextView
+            android:id="@+id/isRead_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:alpha="0.5"
+            android:text="@string/isRead"
+            android:textSize="@dimen/small_text_size"
+            app:layout_constraintEnd_toEndOf="@id/sticker_time"
+            app:layout_constraintStart_toStartOf="@id/sticker_time"
+            app:layout_constraintBottom_toTopOf="@id/sticker_time"
+            android:visibility="gone"/>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

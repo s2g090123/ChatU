@@ -10,4 +10,5 @@
     <string name="find_friend">尋找朋友</string>
     <string name="find_friend_hint">請輸入UID(8碼)</string>
     <string name="invite_friend">好友邀請</string>
+    <string name="isRead">已讀</string>
 </resources>

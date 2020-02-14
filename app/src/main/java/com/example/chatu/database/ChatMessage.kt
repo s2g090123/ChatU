@@ -9,6 +9,8 @@ import androidx.room.PrimaryKey
 data class ChatMessage(
     @PrimaryKey(autoGenerate = true)
     val id: Long? = 0L,
+    @ColumnInfo(name = "tag")
+    val tag: Long = 0L,
     @ColumnInfo(name = "from_uid")
     val from_uid: String,
     @ColumnInfo(name = "to_uid")
@@ -21,8 +23,8 @@ data class ChatMessage(
     val time: String,
     @ColumnInfo(name = "read")
     val read: Boolean = false
-) {
+    ) {
     @Ignore
-    constructor() : this(null,"","","","","",false)
+    constructor() : this(null,0L,"","","","","",false)
 }
 
