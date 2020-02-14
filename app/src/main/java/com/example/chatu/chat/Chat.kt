@@ -109,6 +109,7 @@ class Chat : Fragment() {
                 override fun onChildMoved(p0: DataSnapshot, p1: String?) {}
                 override fun onChildChanged(p0: DataSnapshot, p1: String?) {}
                 override fun onChildAdded(p0: DataSnapshot, p1: String?) {
+
                     val message = p0.getValue(ChatMessage::class.java)
                     if(message!!.from_uid == uid && message.to_uid == myUid) {
                         if(!message.read) {
