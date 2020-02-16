@@ -92,6 +92,9 @@ class MessageAdapter(private val myUid: String): ListAdapter<ChatMessage, Recycl
             if(item.read) {
                 binding.isReadText.visibility = View.VISIBLE
             }
+            else {
+                binding.isReadText.visibility = View.GONE
+            }
             binding.executePendingBindings()
         }
 
@@ -124,6 +127,9 @@ class MessageAdapter(private val myUid: String): ListAdapter<ChatMessage, Recycl
             binding.message = item
             if(item.read) {
                 binding.isReadText.visibility = View.VISIBLE
+            }
+            else {
+                binding.isReadText.visibility = View.GONE
             }
             binding.executePendingBindings()
         }

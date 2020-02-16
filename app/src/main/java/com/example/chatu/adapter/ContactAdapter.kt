@@ -1,6 +1,7 @@
 package com.example.chatu.adapter
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -23,6 +24,10 @@ class ContactAdapter(private val clickListener: ContactListener): ListAdapter<Co
         fun bind(contact: Contact, listener: ContactListener) {
             binding.contact = contact
             binding.contactListener = listener
+            if(contact.unread == 0)
+                binding.unreadText.visibility = View.GONE
+            else
+                binding.unreadText.visibility = View.VISIBLE
             binding.executePendingBindings()
         }
 

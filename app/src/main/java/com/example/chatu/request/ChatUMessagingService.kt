@@ -47,10 +47,15 @@ class ChatUMessagingService: FirebaseMessagingService() {
                     sendNotification("${data["name"]}, 你的註冊已被審核","UID: ${data["uid"]}")
                 }
                 "message" -> {
-                    if(data["type"] == "0")
-                        sendNotification("${data["name"]}:",data["content"]!!)
-                    else
-                        sendNotification("${data["name"]}:","傳了一個貼圖")
+                    val sharedPref: SharedPreferences = applicationContext.getSharedPreferences("ChatU",0)
+                    val otherUser = sharedPref.getString("otherUser",null)
+                    if(data["from_uid"] != otherUser) {
+                        updateUnRead(data["from_uid"]!!)
+                        if(data["type"] == "0")
+                            sendNotification("${data["name"]}:",data["content"]!!)
+                        else
+                            sendNotification("${data["name"]}:","傳了一個貼圖")
+                    }
                 }
                 "find" -> {
                     findResultBroadcast(data["to_uid"],data["name"])
@@ -134,6 +139,19 @@ class ChatUMessagingService: FirebaseMessagingService() {
         withContext(Dispatchers.IO) {
             val contactDao = ChatUDatabase.getInstance(applicationContext).contactDao
             contactDao.insert(contact)
+        }
+    }
+
+    private fun updateUnRead(uid: String) {
+        coroutineScope.launch {
+            doUpdateUnRead(uid)
+        }
+    }
+
+    private suspend fun doUpdateUnRead(uid: String) {
+        withContext(Dispatchers.IO) {
+            val contactDao = ChatUDatabase.getInstance(applicationContext).contactDao
+            contactDao.update(uid)
         }
     }
 }

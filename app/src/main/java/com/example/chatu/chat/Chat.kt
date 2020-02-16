@@ -1,6 +1,10 @@
 package com.example.chatu.chat
 
 
+import android.content.*
+import android.net.*
+import android.net.wifi.WifiManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
@@ -9,11 +13,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.chatu.NetworkChangeReceiver
 import com.example.chatu.Sticker
 import com.example.chatu.adapter.MessageAdapter
 import com.example.chatu.adapter.StickerAdapter
@@ -32,7 +39,9 @@ class Chat : Fragment() {
     private lateinit var firebaseDatabase: FirebaseDatabase
     private lateinit var DatabaseRef: DatabaseReference
     private var lastValueEventListener: ChildEventListener? = null
+    private val broadcastReceiver = NetworkChangeReceiver()
 
+    private lateinit var binding: FragmentChatBinding
     private lateinit var viewModel: ChatViewModel
     private lateinit var uid: String
     private lateinit var myUid: String
@@ -44,11 +53,13 @@ class Chat : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         firebaseDatabase = FirebaseDatabase.getInstance()
-        DatabaseRef = firebaseDatabase.reference
+        DatabaseRef = firebaseDatabase.getReference("/chats")
+        DatabaseRef.keepSynced(true)
+
         val name = ChatArgs.fromBundle(arguments!!).name
         uid = ChatArgs.fromBundle(arguments!!).uid
         myUid = ChatArgs.fromBundle(arguments!!).myUid
-        val binding = FragmentChatBinding.inflate(inflater,container,false)
+        binding = FragmentChatBinding.inflate(inflater,container,false)
         (activity as AppCompatActivity).setSupportActionBar(binding.chatToolBar)
         binding.chatToolBar.title = "$name (${uid})"
 
@@ -131,7 +142,7 @@ class Chat : Fragment() {
                     val message = p0.getValue(ChatMessage::class.java)
                     if(message!!.from_uid == uid && message.to_uid == myUid) {
                         if(!message.read) {
-                            p0.ref.child("read").setValue(true)
+                            p0.ref.updateChildren(mapOf(Pair("read",true)))
                             viewModel.getMessage(message)
                         }
                     }
@@ -143,20 +154,32 @@ class Chat : Fragment() {
                 }
                 override fun onChildRemoved(p0: DataSnapshot) {}
             }
-            DatabaseRef.child("chats").orderByKey().addChildEventListener(lastValueEventListener as ChildEventListener)
+            DatabaseRef.orderByChild("time").addChildEventListener(lastValueEventListener as ChildEventListener)
         }
     }
 
-    override fun onStart() {
-        super.onStart()
+    override fun onResume() {
+        super.onResume()
         attachDatabaseLastListener()
+        val intentFilter = IntentFilter()
+        intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION)
+        LocalBroadcastManager.getInstance(activity!!.applicationContext).registerReceiver(broadcastReceiver,intentFilter)
+        setCurrentOtherUser(uid)
+    }
+
+    private fun setCurrentOtherUser(uid: String?) {
+        val sharedPref: SharedPreferences = requireNotNull(activity!!).applicationContext.getSharedPreferences("ChatU",0)
+        sharedPref.edit().putString("otherUser", uid).apply()
     }
 
     override fun onPause() {
         super.onPause()
         if(lastValueEventListener != null) {
-            DatabaseRef.child("chats").removeEventListener(lastValueEventListener!!)
+            DatabaseRef.removeEventListener(lastValueEventListener!!)
             lastValueEventListener = null
         }
+        LocalBroadcastManager.getInstance(activity!!.applicationContext).unregisterReceiver(broadcastReceiver)
+        setCurrentOtherUser(null)
     }
+
 }

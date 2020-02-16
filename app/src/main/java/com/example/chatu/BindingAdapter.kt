@@ -4,6 +4,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.databinding.BindingAdapter
 import com.example.chatu.database.ChatUDatabase
+import pl.droidsonroids.gif.GifImageView
 import java.text.SimpleDateFormat
 
 @BindingAdapter("contentName")
@@ -19,7 +20,7 @@ fun setContentTime(textView: TextView, time: String) {
 }
 
 @BindingAdapter("contentImage")
-fun setContentImage(imageView: ImageView, idString: String) {
+fun setContentImage(imageView: GifImageView, idString: String) {
     imageView.setImageResource(idString.toInt())
 }
 

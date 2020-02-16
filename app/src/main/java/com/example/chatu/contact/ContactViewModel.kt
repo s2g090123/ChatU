@@ -20,11 +20,10 @@ class ContactViewModel(private val contactDao: ContactDao, private val invitatio
     private val firebaseDatabase = FirebaseDatabase.getInstance()
     private val databaseRef = firebaseDatabase.reference.child("requests")
 
-
     val contacts = contactDao.getAll()
 
-    private val _contactInfo = MutableLiveData<List<String>?>()
-    val contactInfo: LiveData<List<String>?>
+    private val _contactInfo = MutableLiveData<Contact?>()
+    val contactInfo: LiveData<Contact?>
         get() = _contactInfo
 
     private fun addFriend(invitation: Invitation) {
@@ -51,8 +50,17 @@ class ContactViewModel(private val contactDao: ContactDao, private val invitatio
         }
     }
 
-    fun onContactClicked(name:String, uid: String, myUid: String) {
-        _contactInfo.value = listOf(name,uid,myUid)
+    fun onContactClicked(contact: Contact) {
+        _contactInfo.value = contact
+        coroutineScope.launch {
+            resetUnRead(contact.uid)
+        }
+    }
+
+    private suspend fun resetUnRead(uid: String) {
+        withContext(Dispatchers.IO) {
+            contactDao.reset(uid)
+        }
     }
 
     fun doneNavigating() {

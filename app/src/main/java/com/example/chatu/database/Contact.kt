@@ -9,5 +9,7 @@ data class Contact(
     @PrimaryKey(autoGenerate = false)
     val uid: String,
     @ColumnInfo(name = "name")
-    val name: String
+    val name: String,
+    @ColumnInfo(name = "unread_message")
+    val unread: Int = 0
 )

@@ -10,7 +10,7 @@ import com.example.chatu.request.RequestMessage
 import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.*
 
-class ChatViewModel(private val messageDao: ChatMessageDao, myUid: String, uid: String): ViewModel() {
+class ChatViewModel(private val messageDao: ChatMessageDao, private val myUid: String, uid: String): ViewModel() {
     val messages = messageDao.get(myUid,uid)
     val messageCount = messageDao.getRowCount()
 
@@ -94,7 +94,7 @@ class ChatViewModel(private val messageDao: ChatMessageDao, myUid: String, uid: 
 
     private suspend fun update(tag: Long) {
         withContext(Dispatchers.IO) {
-            messageDao.update(tag)
+            messageDao.update(tag,myUid)
         }
     }
 }

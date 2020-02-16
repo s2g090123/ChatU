@@ -23,6 +23,7 @@ import com.example.chatu.adapter.ContactListener
 import com.example.chatu.adapter.InvitationAdapter
 import com.example.chatu.adapter.InvitationListener
 import com.example.chatu.database.ChatUDatabase
+import com.example.chatu.database.Contact
 import com.example.chatu.databinding.DialogFindFriendBinding
 import com.example.chatu.databinding.DialogInvitationBinding
 import com.example.chatu.databinding.FragmentContactBinding
@@ -58,11 +59,11 @@ class Contact : Fragment() {
 
         binding.contactList.layoutManager = LinearLayoutManager(context,LinearLayoutManager.VERTICAL,false)
         val adapter = ContactAdapter(ContactListener { name,uid ->
-            viewModel.onContactClicked(name,uid,arguments.uid)
+            viewModel.onContactClicked(Contact(uid,name,0))
         })
         viewModel.contactInfo.observe(this, Observer {
             it?.let {
-                findNavController().navigate(ContactDirections.actionFragmentContactToChat2(it[0],it[1],it[2]))
+                findNavController().navigate(ContactDirections.actionFragmentContactToChat2(it.name,it.uid,arguments.uid))
                 viewModel.doneNavigating()
             }
         })
@@ -87,8 +88,6 @@ class Contact : Fragment() {
         super.onStart()
         if(intentFilter == null) {
             val intentFilter = IntentFilter("Find")
-            intentFilter.addAction("Invitation")
-            intentFilter.addAction("Reply")
             broadcastManager.registerReceiver(receiver,intentFilter)
         }
     }

@@ -11,7 +11,7 @@ interface ChatMessageDao {
     @Query("Select * from chat_message_table where (from_uid= :me AND to_uid= :other) OR from_uid= :other")
     fun get(me: String, other: String): LiveData<List<ChatMessage>>
 
-    @Query("Select * from chat_message_table")
+    @Query("Select * from chat_message_table Order by send_time")
     fun getAll(): LiveData<List<ChatMessage>>
 
     @Query("Delete from chat_message_table")
@@ -20,8 +20,8 @@ interface ChatMessageDao {
     @Query("SELECT COUNT(id) FROM chat_message_table")
     fun getRowCount(): LiveData<Long>
 
-    @Query("Update CHAT_MESSAGE_TABLE Set read = 1 where tag = :tag")
-    fun update(tag: Long)
+    @Query("Update chat_message_table Set read = 1 where tag = :tag AND from_uid = :uid")
+    fun update(tag: Long, uid: String)
 }
 
 @Dao
@@ -37,6 +37,12 @@ interface ContactDao {
 
     @Query("Delete from contact_table where uid = :uid")
     fun delete(uid: String)
+
+    @Query("Update contact_table Set unread_message = unread_message + 1 where uid = :uid")
+    fun update(uid: String)
+
+    @Query("Update contact_table Set unread_message = 0 where uid = :uid")
+    fun reset(uid: String)
 }
 
 @Dao
