@@ -70,7 +70,7 @@ class MessageAdapter(private val myUid: String): ListAdapter<ChatMessage, Recycl
         }
     }
 
-    class TextViewHolder private constructor(val binding: ItemChatContentBinding): RecyclerView.ViewHolder(binding.root) {
+    class TextViewHolder private constructor(private val binding: ItemChatContentBinding): RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: ChatMessage) {
             binding.message = item
@@ -85,7 +85,7 @@ class MessageAdapter(private val myUid: String): ListAdapter<ChatMessage, Recycl
         }
     }
 
-    class TextMeViewHolder private constructor(val binding: ItemChatContentMeBinding): RecyclerView.ViewHolder(binding.root) {
+    class TextMeViewHolder private constructor(private val binding: ItemChatContentMeBinding): RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: ChatMessage) {
             binding.message = item
@@ -106,7 +106,7 @@ class MessageAdapter(private val myUid: String): ListAdapter<ChatMessage, Recycl
         }
     }
 
-    class StickerViewHolder private constructor(val binding: ItemChatStickerBinding): RecyclerView.ViewHolder(binding.root) {
+    class StickerViewHolder private constructor(private val binding: ItemChatStickerBinding): RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: ChatMessage) {
             binding.message = item
@@ -121,7 +121,7 @@ class MessageAdapter(private val myUid: String): ListAdapter<ChatMessage, Recycl
         }
     }
 
-    class StickerMeViewHolder private constructor(val binding: ItemChatStickerMeBinding): RecyclerView.ViewHolder(binding.root) {
+    class StickerMeViewHolder private constructor(private val binding: ItemChatStickerMeBinding): RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: ChatMessage) {
             binding.message = item
@@ -141,5 +141,4 @@ class MessageAdapter(private val myUid: String): ListAdapter<ChatMessage, Recycl
             }
         }
     }
-
 }

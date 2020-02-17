@@ -41,9 +41,6 @@
         <argument
             android:name="uid"
             app:argType="string" />
-        <argument
-            android:name="myUid"
-            app:argType="string" />
     </fragment>
     <fragment
         android:id="@+id/start2"

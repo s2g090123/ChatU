@@ -23,7 +23,7 @@ data class ChatMessage(
     val time: String,
     @ColumnInfo(name = "read")
     val read: Boolean = false
-    ) {
+){
     @Ignore
     constructor() : this(null,0L,"","","","","",false)
 }

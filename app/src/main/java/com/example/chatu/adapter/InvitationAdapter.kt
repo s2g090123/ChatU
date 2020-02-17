@@ -19,7 +19,7 @@ class InvitationAdapter(private val addListener: InvitationListener, private val
         }
     }
 
-    class InvitationViewHolder private constructor(val binding: ItemInvitationBinding): RecyclerView.ViewHolder(binding.root){
+    class InvitationViewHolder private constructor(private val binding: ItemInvitationBinding): RecyclerView.ViewHolder(binding.root){
         fun bind(item: Invitation, addListener: InvitationListener, cancelListener: InvitationListener) {
             binding.invitation = item
             binding.addListener = addListener
@@ -42,7 +42,6 @@ class InvitationAdapter(private val addListener: InvitationListener, private val
     override fun onBindViewHolder(holder: InvitationViewHolder, position: Int) {
         holder.bind(getItem(position), addListener, cancelListener)
     }
-
 }
 
 class InvitationListener(val listener: (invitation: Invitation) -> Unit) {

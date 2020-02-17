@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -34,10 +33,11 @@ import com.example.chatu.databinding.FragmentContactBinding
  */
 class Contact : Fragment() {
 
-    lateinit var viewModel: ContactViewModel
-    lateinit var binding: FragmentContactBinding
-    lateinit var broadcastManager: LocalBroadcastManager
-    var intentFilter: IntentFilter? = null
+    private lateinit var viewModel: ContactViewModel
+    private lateinit var broadcastManager: LocalBroadcastManager
+    private var intentFilter: IntentFilter? = null
+    private lateinit var myName: String
+    private lateinit var myUid: String
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -45,25 +45,27 @@ class Contact : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         val arguments = ContactArgs.fromBundle(arguments!!)
-        binding = FragmentContactBinding.inflate(inflater,container,false)
+        myName = arguments.name
+        myUid = arguments.uid
+        val binding = FragmentContactBinding.inflate(inflater,container,false)
         (activity as AppCompatActivity).setSupportActionBar(binding.contactToolBar)
-        binding.contactToolBar.title = "${arguments.name} (${arguments.uid})"
+        binding.contactToolBar.title = "$myName (${myUid})"
 
         val contactDao = ChatUDatabase.getInstance(requireNotNull(activity).application).contactDao
         val invitationDao = ChatUDatabase.getInstance(requireNotNull(activity).application).invitationDao
-        val viewModelFactory = ContactViewModelFactory(contactDao,invitationDao,arguments.uid,arguments.name)
+        val viewModelFactory = ContactViewModelFactory(contactDao,invitationDao)
         viewModel = ViewModelProviders.of(this,viewModelFactory).get(ContactViewModel::class.java)
-
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
 
+        // 建立聯絡人清單
         binding.contactList.layoutManager = LinearLayoutManager(context,LinearLayoutManager.VERTICAL,false)
         val adapter = ContactAdapter(ContactListener { name,uid ->
             viewModel.onContactClicked(Contact(uid,name,0))
         })
         viewModel.contactInfo.observe(this, Observer {
             it?.let {
-                findNavController().navigate(ContactDirections.actionFragmentContactToChat2(it.name,it.uid,arguments.uid))
+                findNavController().navigate(ContactDirections.actionFragmentContactToChat2(it.name,it.uid))
                 viewModel.doneNavigating()
             }
         })
@@ -74,7 +76,6 @@ class Contact : Fragment() {
                 adapter.submitList(it)
             }
         })
-
         return binding.root
     }
 
@@ -86,9 +87,10 @@ class Contact : Fragment() {
 
     override fun onStart() {
         super.onStart()
+        // 註冊收到搜尋使用者結果的receiver
         if(intentFilter == null) {
-            val intentFilter = IntentFilter("Find")
-            broadcastManager.registerReceiver(receiver,intentFilter)
+            intentFilter = IntentFilter("Find")
+            broadcastManager.registerReceiver(receiver, intentFilter!!)
         }
     }
 
@@ -103,6 +105,7 @@ class Contact : Fragment() {
         super.onCreateOptionsMenu(menu, inflater)
     }
 
+    // 搜尋使用者和確認邀請的dialog
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         val dialogBuilder = AlertDialog.Builder(context!!,R.style.AlertDialogCustom)
 
@@ -117,18 +120,20 @@ class Contact : Fragment() {
                 dialogBuilder.setView(dialogViewBinding.root)
                 dialogViewBinding.lifecycleOwner = this
                 dialogViewBinding.viewModel = viewModel
+                // 按下搜尋
                 dialogViewBinding.searchButton.setOnClickListener {
                     val uid = dialogViewBinding.findFriendEdit.text.toString()
                     if(uid.isNotEmpty()) {
                         dialogViewBinding.findResult.visibility = View.GONE
                         if (uid.length == 8) {
                             dialogViewBinding.findFriendProgressbar.visibility = View.VISIBLE
-                            viewModel.searchFriend(uid)
+                            viewModel.searchFriend(uid,myUid)
                         } else {
                             Toast.makeText(context, "輸入錯誤的UID格式", Toast.LENGTH_SHORT).show()
                         }
                     }
                 }
+                // 確認搜尋的結果
                 viewModel.searchName.observe(this, Observer {
                     dialogViewBinding.findFriendProgressbar.visibility = View.GONE
                     when (it) {
@@ -140,9 +145,10 @@ class Contact : Fragment() {
                         else -> dialogViewBinding.findResult.visibility = View.VISIBLE
                     }
                 })
+                // 傳送交友邀請
                 viewModel.addRequestClicked.observe(this, Observer {
                     it?.let {
-                        viewModel.sendFriendRequest()
+                        viewModel.sendAddFriendRequest(myUid,myName)
                         viewModel.doneSendFriendRequestClicked()
                         Toast.makeText(context,"已傳送交友邀請",Toast.LENGTH_SHORT).show()
                     }
@@ -154,13 +160,12 @@ class Contact : Fragment() {
                 val dialogViewBinding = DialogInvitationBinding.inflate(LayoutInflater.from(context),null,false)
                 dialogBuilder.setView(dialogViewBinding.root)
                 dialogViewBinding.lifecycleOwner = this
+                // 建立好友邀請的畫面
                 dialogViewBinding.invitationList.layoutManager = LinearLayoutManager(context,LinearLayoutManager.VERTICAL,false)
-                val adapter = InvitationAdapter(InvitationListener {viewModel.doInvitationAdd(it)}
-                    ,InvitationListener {viewModel.doInvitationCancel(it)})
+                val adapter = InvitationAdapter(InvitationListener { viewModel.doInvitationAdd(it,myUid,myName)}
+                    ,InvitationListener {viewModel.doInvitationCancel(it,myUid,myName)} )
                 dialogViewBinding.invitationList.adapter = adapter
-                viewModel.invitations.observe(this, Observer {
-                    adapter.submitList(it)
-                })
+                viewModel.invitations.observe(this, Observer {adapter.submitList(it)})
             }
         }
         dialogBuilder.show()
@@ -169,11 +174,8 @@ class Contact : Fragment() {
 
     private val receiver = object: BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            when (intent?.action) {
-                "Find" -> {
-                    viewModel.getFindFriendResult(intent.getStringExtra("uid"),intent.getStringExtra("name"))
-                }
-            }
+            if(intent?.action == "Find")
+                viewModel.getFindFriendResult(intent.getStringExtra("uid"),intent.getStringExtra("name"))
         }
     }
 }

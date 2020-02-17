@@ -11,15 +11,16 @@ import android.graphics.Color
 import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Build
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.chatu.MainActivity
+import com.example.chatu.database.ChatMessage
 import com.example.chatu.database.ChatUDatabase
 import com.example.chatu.database.Contact
 import com.example.chatu.database.Invitation
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -36,6 +37,16 @@ class ChatUMessagingService: FirebaseMessagingService() {
         coroutineScope = CoroutineScope(Dispatchers.Main)
     }
 
+    /*
+        data: {
+    *         action: String
+    *         data: String
+    *         note: String
+    *   }
+    *   根據收到的notification的action，決定要做什麼
+    *   register,find -> 從server寄來
+    *   message,invitation,reply -> 從other user寄來
+    */
     override fun onMessageReceived(p0: RemoteMessage) {
         super.onMessageReceived(p0)
         val data = p0.data
@@ -43,31 +54,35 @@ class ChatUMessagingService: FirebaseMessagingService() {
             when(data["action"]) {
                 "register" -> {
                     val sharedPref: SharedPreferences = applicationContext.getSharedPreferences("ChatU",0)
-                    sharedPref.edit().putString("uid", data["uid"]).putString("token", data["token"]).apply()
+                    sharedPref.edit().putString("uid", data["uid"]).putString("token", data["token"]).putString("name",data["name"]).apply()
                     sendNotification("${data["name"]}, 你的註冊已被審核","UID: ${data["uid"]}")
+                    broadcastManager.sendBroadcast(Intent("register"))
                 }
                 "message" -> {
+                    val message = Gson().fromJson(data["data"],ChatMessage::class.java)
                     val sharedPref: SharedPreferences = applicationContext.getSharedPreferences("ChatU",0)
                     val otherUser = sharedPref.getString("otherUser",null)
-                    if(data["from_uid"] != otherUser) {
-                        updateUnRead(data["from_uid"]!!)
-                        if(data["type"] == "0")
-                            sendNotification("${data["name"]}:",data["content"]!!)
+                    if(message.from_uid != otherUser) {
+                        updateUnRead(message.from_uid)
+                        if(message.type == "0")
+                            sendNotification("${data["note"]}:",message.content)
                         else
-                            sendNotification("${data["name"]}:","傳了一個貼圖")
+                            sendNotification("${data["note"]}:","傳了一個貼圖")
                     }
                 }
                 "find" -> {
                     findResultBroadcast(data["to_uid"],data["name"])
                 }
                 "invitation" -> {
-                    sendNotification("來自${data["name"]}","有一則好友邀請")
-                    insertInvitation(Invitation(data["time"]!!,data["from_uid"]!!,data["to_uid"]!!,data["name"]!!,null))
+                    val invitation = Gson().fromJson(data["data"],Invitation::class.java)
+                    sendNotification("來自${invitation.name}","有一則好友邀請")
+                    insertInvitation(invitation)
                 }
                 "reply" -> {
-                    sendNotification("來自${data["name"]}的邀請回覆:",data["answer"]!!)
-                    if(data["answer"] == "Yes") {
-                        insertContact(Contact(data["from_uid"]!!,data["name"]!!))
+                    val invitation = Gson().fromJson(data["data"],Invitation::class.java)
+                    sendNotification("來自${invitation.name}的邀請回覆:",data["note"]!!)
+                    if(data["note"] == "Yes") {
+                        insertContact(Contact(invitation.from_uid,invitation.name))
                     }
                 }
             }
@@ -82,13 +97,13 @@ class ChatUMessagingService: FirebaseMessagingService() {
     }
 
     private fun sendNotification(title: String, body: String) {
-        val notificationManager =
-            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val intent = Intent(this, MainActivity::class.java)
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        val requestCode = System.currentTimeMillis().toInt()
         val pendingIntent = PendingIntent.getActivity(
             this,
-            0 /* request code */,
+            requestCode /* request code */,
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT
         )
@@ -121,7 +136,6 @@ class ChatUMessagingService: FirebaseMessagingService() {
             doInsertInvitation(invitation)
         }
     }
-
     private suspend fun doInsertInvitation(invitation: Invitation) {
         withContext(Dispatchers.IO) {
             val invitationDao = ChatUDatabase.getInstance(applicationContext).invitationDao
@@ -134,7 +148,6 @@ class ChatUMessagingService: FirebaseMessagingService() {
                 doInsertContact(contact)
         }
     }
-
     private suspend fun doInsertContact(contact: Contact) {
         withContext(Dispatchers.IO) {
             val contactDao = ChatUDatabase.getInstance(applicationContext).contactDao
@@ -147,7 +160,6 @@ class ChatUMessagingService: FirebaseMessagingService() {
             doUpdateUnRead(uid)
         }
     }
-
     private suspend fun doUpdateUnRead(uid: String) {
         withContext(Dispatchers.IO) {
             val contactDao = ChatUDatabase.getInstance(applicationContext).contactDao

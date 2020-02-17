@@ -18,7 +18,7 @@ class StickerAdapter(private val clickListener: StickerListener): ListAdapter<In
         }
     }
 
-    class StickerListViewHolder private constructor(val binding: ItemStickerBinding): RecyclerView.ViewHolder(binding.root) {
+    class StickerListViewHolder private constructor(private val binding: ItemStickerBinding): RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: Int, listener: StickerListener) {
             binding.sticker.setImageResource(item)
@@ -43,7 +43,6 @@ class StickerAdapter(private val clickListener: StickerListener): ListAdapter<In
     override fun onBindViewHolder(holder: StickerListViewHolder, position: Int) {
         holder.bind(getItem(position),clickListener)
     }
-
 }
 
 class StickerListener(val listener: (res: Int) -> Unit) {

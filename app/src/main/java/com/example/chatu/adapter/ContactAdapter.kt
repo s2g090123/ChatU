@@ -20,7 +20,7 @@ class ContactAdapter(private val clickListener: ContactListener): ListAdapter<Co
 
     }
 
-    class ContactViewHolder private constructor(val binding: ItemContactBinding): RecyclerView.ViewHolder(binding.root) {
+    class ContactViewHolder private constructor(private val binding: ItemContactBinding): RecyclerView.ViewHolder(binding.root) {
         fun bind(contact: Contact, listener: ContactListener) {
             binding.contact = contact
             binding.contactListener = listener
@@ -46,7 +46,6 @@ class ContactAdapter(private val clickListener: ContactListener): ListAdapter<Co
     override fun onBindViewHolder(holder: ContactViewHolder, position: Int) {
         holder.bind(getItem(position),clickListener)
     }
-
 }
 
 class ContactListener(val clickListener: (name: String, uid: String) -> Unit) {

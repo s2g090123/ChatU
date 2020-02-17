@@ -3,17 +3,15 @@ package com.example.chatu
 
 import android.app.Activity.RESULT_CANCELED
 import android.app.Activity.RESULT_OK
-import android.content.Intent
-import android.content.SharedPreferences
+import android.content.*
 import android.os.Bundle
 import android.os.Handler
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.app.AppCompatActivity
-import androidx.navigation.fragment.NavHostFragment.findNavController
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.navigation.fragment.findNavController
 import com.example.chatu.databinding.FragmentStartBinding
 import com.example.chatu.request.RequestMessage
 import com.firebase.ui.auth.AuthUI
@@ -27,44 +25,51 @@ import com.google.firebase.iid.FirebaseInstanceId
  */
 class Start : Fragment() {
 
-    lateinit var binding: FragmentStartBinding
-    lateinit var mFireBaseDatabase: FirebaseDatabase
-    lateinit var mFireBaseDatabaseRef: DatabaseReference
-    lateinit var mAuth: FirebaseAuth
-    lateinit var authStateListener: FirebaseAuth.AuthStateListener
-    lateinit var sharedPref: SharedPreferences
-    lateinit var token: String
-    val RC_SIGN_IN = 1
-    var delay = 2000L
+    private lateinit var binding: FragmentStartBinding
+    private lateinit var mFireBaseDatabaseRef: DatabaseReference
+    private lateinit var mAuth: FirebaseAuth
+    private lateinit var authStateListener: FirebaseAuth.AuthStateListener
+    private lateinit var sharedPref: SharedPreferences
+    private lateinit var token: String
+    private val RC_SIGN_IN = 1
+    private var isRegisted = true
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        mFireBaseDatabase = FirebaseDatabase.getInstance()
+        val mFireBaseDatabase = FirebaseDatabase.getInstance()
         mFireBaseDatabaseRef = mFireBaseDatabase.reference.child("requests")
         binding = FragmentStartBinding.inflate(inflater,container,false)
         sharedPref= activity!!.getSharedPreferences("ChatU",0)
 
+        // 獲取device token，token用於傳遞notification時的地址
         FirebaseInstanceId.getInstance().instanceId.addOnCompleteListener {
-            if(!it.isSuccessful) {
-                Log.w("Start", "getInstanceId failed")
+            if(!it.isSuccessful)
                 throw Exception("getInstanceId failed")
-            }
-
             // Get new Instance ID token
             token =  it.result!!.token
         }
 
+        // 建立身分驗證畫面
         mAuth = FirebaseAuth.getInstance()
         authStateListener = FirebaseAuth.AuthStateListener {
             val user = mAuth.currentUser
-            if(user != null) {
-                startToContact(user.displayName)
+            if(user != null) {  // 早已註冊
+                if(isRegisted)
+                    startToContact(user.displayName)
+                else {  // 新註冊
+                    val receiver = object: BroadcastReceiver() {
+                        override fun onReceive(context: Context?, intent: Intent?) {
+                            startToContact(user.displayName)
+                        }
+                    }
+                    LocalBroadcastManager.getInstance(context!!).registerReceiver(receiver,IntentFilter("register"))
+                }
             }
-            else {
-                delay = 5000L
+            else {  // 建立註冊畫面
+                isRegisted = false
                 startActivityForResult(AuthUI.getInstance().createSignInIntentBuilder().setIsSmartLockEnabled(false)
                     .setAvailableProviders(listOf(AuthUI.IdpConfig.EmailBuilder().build(),AuthUI.IdpConfig.GoogleBuilder().build()))
                     .build(),RC_SIGN_IN)
@@ -73,29 +78,30 @@ class Start : Fragment() {
         return binding.root
     }
 
+    // 註冊帳號的結果，成功的話則向server獲取uid，並將token存於server中
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        when(requestCode) {
-            RC_SIGN_IN -> {
-                when(resultCode) {
-                    RESULT_OK -> register(mAuth.currentUser!!.displayName)
-                    RESULT_CANCELED -> activity!!.onBackPressed()
-                }
+        if(requestCode == RC_SIGN_IN) {
+            when(resultCode) {
+                RESULT_OK -> sendRegisterRequest(mAuth.currentUser!!.displayName)
+                RESULT_CANCELED -> activity!!.onBackPressed()
             }
         }
     }
 
+    // 當獲取uid或早已存在uid，則轉向Contact畫面
     private fun startToContact(name: String?) {
         binding.welcome.text = getString(R.string.welcome_text,name)
         Handler().postDelayed({
             val uid = sharedPref.getString("uid","重新開啟應用程式")
-            findNavController(this).navigate(StartDirections.actionStart2ToFragmentContact(name!!,uid))
-        },delay)
+            findNavController().navigate(StartDirections.actionStart2ToFragmentContact(name!!,uid!!))
+        },2000L)
     }
 
-    private fun register(name: String?) {
-        val registerMap = mapOf(Pair("name",name),Pair("token",token))
-        val request = RequestMessage("register",registerMap)
+    // 發送註冊請求
+    private fun sendRegisterRequest(name: String?) {
+        val data = mapOf(Pair("name",name),Pair("token",token))
+        val request = RequestMessage("register",data)
         mFireBaseDatabaseRef.push().setValue(request)
     }
 
@@ -106,8 +112,7 @@ class Start : Fragment() {
 
     override fun onPause() {
         super.onPause()
-        if(authStateListener != null) {
-            mAuth.removeAuthStateListener(authStateListener)
-        }
+        mAuth.removeAuthStateListener(authStateListener)
     }
+
 }
