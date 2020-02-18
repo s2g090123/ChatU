@@ -168,7 +168,9 @@ class Contact : Fragment() {
                 viewModel.invitations.observe(this, Observer {adapter.submitList(it)})
             }
         }
-        dialogBuilder.show()
+        val dialog = dialogBuilder.create()
+        dialog.window.attributes.windowAnimations = R.style.AlertDialogAnimation
+        dialog.show()
         return super.onOptionsItemSelected(item)
     }
 

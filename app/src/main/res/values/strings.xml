@@ -11,4 +11,18 @@
     <string name="find_friend_hint">請輸入UID(8碼)</string>
     <string name="invite_friend">好友邀請</string>
     <string name="isRead">已讀</string>
+
+    <string name="facebook_application_id" translatable="false">125958355465095</string>
+    <string name="facebook_login_protocol_scheme" translatable="false">125958355465095</string>
+
+    <!-- firebase auth ui -->
+    <string name="fui_next_default" translation_description="Button text to continue">下一步</string>
+    <string name="fui_invalid_email_address" translation_description="Inline error for invalid email address">請輸入正確的Email格式</string>
+    <string name="fui_missing_email_address" translation_description="Inline error for empty email address in input field">請輸入你的Email</string>
+    <string name="fui_missing_first_and_last_name" translation_description="Inline error for empty email address in input field">請輸入你的姓名</string>
+    <string name="fui_password_hint" translation_description="Hint for password input field">密碼</string>
+    <string name="fui_name_hint" translation_description="Hint for last name input field">你的姓名</string>
+    <string name="fui_button_text_save" translation_description="Button text to save input form">保存</string>
+    <string name="fui_email_link_cross_device_sign_in_button_text" translation_description="Sign in with provider text">登入</string>
+
 </resources>

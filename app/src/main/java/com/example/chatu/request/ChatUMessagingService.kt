@@ -50,40 +50,44 @@ class ChatUMessagingService: FirebaseMessagingService() {
     override fun onMessageReceived(p0: RemoteMessage) {
         super.onMessageReceived(p0)
         val data = p0.data
-        if(data != null) {
-            when(data["action"]) {
-                "register" -> {
-                    val sharedPref: SharedPreferences = applicationContext.getSharedPreferences("ChatU",0)
-                    sharedPref.edit().putString("uid", data["uid"]).putString("token", data["token"]).putString("name",data["name"]).apply()
-                    sendNotification("${data["name"]}, 你的註冊已被審核","UID: ${data["uid"]}")
-                    broadcastManager.sendBroadcast(Intent("register"))
+        when(data["action"]) {
+            "register" -> {
+                val sharedPref: SharedPreferences = applicationContext.getSharedPreferences("ChatU",0)
+                sharedPref.edit().putString("uid", data["uid"]).putString("token", data["token"]).putString("name",data["name"]).apply()
+                sendNotification("${data["name"]}, 你的註冊已被審核","UID: ${data["uid"]}")
+                broadcastManager.sendBroadcast(Intent("register"))
+            }
+            "signin" -> {
+                val sharedPref: SharedPreferences = applicationContext.getSharedPreferences("ChatU",0)
+                sharedPref.edit().putString("uid", data["uid"]).putString("token", data["token"]).putString("name",data["name"]).apply()
+                sendNotification("Hi ${data["name"]}, 登入成功","UID: ${data["uid"]}")
+                broadcastManager.sendBroadcast(Intent("register"))
+            }
+            "message" -> {
+                val message = Gson().fromJson(data["data"],ChatMessage::class.java)
+                val sharedPref: SharedPreferences = applicationContext.getSharedPreferences("ChatU",0)
+                val otherUser = sharedPref.getString("otherUser",null)
+                if(message.from_uid != otherUser) {
+                    updateUnRead(message.from_uid)
+                    if(message.type == "0")
+                        sendNotification("${data["note"]}:",message.content)
+                    else
+                        sendNotification("${data["note"]}:","傳了一個貼圖")
                 }
-                "message" -> {
-                    val message = Gson().fromJson(data["data"],ChatMessage::class.java)
-                    val sharedPref: SharedPreferences = applicationContext.getSharedPreferences("ChatU",0)
-                    val otherUser = sharedPref.getString("otherUser",null)
-                    if(message.from_uid != otherUser) {
-                        updateUnRead(message.from_uid)
-                        if(message.type == "0")
-                            sendNotification("${data["note"]}:",message.content)
-                        else
-                            sendNotification("${data["note"]}:","傳了一個貼圖")
-                    }
-                }
-                "find" -> {
-                    findResultBroadcast(data["to_uid"],data["name"])
-                }
-                "invitation" -> {
-                    val invitation = Gson().fromJson(data["data"],Invitation::class.java)
-                    sendNotification("來自${invitation.name}","有一則好友邀請")
-                    insertInvitation(invitation)
-                }
-                "reply" -> {
-                    val invitation = Gson().fromJson(data["data"],Invitation::class.java)
-                    sendNotification("來自${invitation.name}的邀請回覆:",data["note"]!!)
-                    if(data["note"] == "Yes") {
-                        insertContact(Contact(invitation.from_uid,invitation.name))
-                    }
+            }
+            "find" -> {
+                findResultBroadcast(data["to_uid"],data["name"])
+            }
+            "invitation" -> {
+                val invitation = Gson().fromJson(data["data"],Invitation::class.java)
+                sendNotification("來自${invitation.name}","有一則好友邀請")
+                insertInvitation(invitation)
+            }
+            "reply" -> {
+                val invitation = Gson().fromJson(data["data"],Invitation::class.java)
+                sendNotification("來自${invitation.name}的邀請回覆:",data["note"]!!)
+                if(data["note"] == "Yes") {
+                    insertContact(Contact(invitation.from_uid,invitation.name))
                 }
             }
         }

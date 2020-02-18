@@ -23,7 +23,13 @@
         tools:layout="@layout/fragment_contact" >
         <action
             android:id="@+id/action_fragment_contact_to_chat2"
-            app:destination="@id/chat2" />
+            app:destination="@id/chat2"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"
+            app:popUpTo="@+id/fragment_contact"
+            app:popUpToInclusive="false" />
         <argument
             android:name="name"
             app:argType="string" />
@@ -55,7 +61,11 @@
         <action
             android:id="@+id/action_start2_to_fragment_contact"
             app:destination="@id/fragment_contact"
+            app:enterAnim="@anim/fade_in"
+            app:exitAnim="@anim/fade_out"
             app:launchSingleTop="false"
+            app:popEnterAnim="@anim/fade_in"
+            app:popExitAnim="@anim/fade_out"
             app:popUpTo="@+id/start2"
             app:popUpToInclusive="true" />
     </fragment>

@@ -71,7 +71,10 @@ class Start : Fragment() {
             else {  // 建立註冊畫面
                 isRegisted = false
                 startActivityForResult(AuthUI.getInstance().createSignInIntentBuilder().setIsSmartLockEnabled(false)
-                    .setAvailableProviders(listOf(AuthUI.IdpConfig.EmailBuilder().build(),AuthUI.IdpConfig.GoogleBuilder().build()))
+                    .setAvailableProviders(listOf(AuthUI.IdpConfig.EmailBuilder().build(),AuthUI.IdpConfig.GoogleBuilder().build()
+                    ,AuthUI.IdpConfig.FacebookBuilder().build(),AuthUI.IdpConfig.GitHubBuilder().build()))
+                    .setTheme(R.style.LoginTheme)
+                    .setLogo(R.drawable.chatu_test_logo)
                     .build(),RC_SIGN_IN)
             }
         }
@@ -83,7 +86,7 @@ class Start : Fragment() {
         super.onActivityResult(requestCode, resultCode, data)
         if(requestCode == RC_SIGN_IN) {
             when(resultCode) {
-                RESULT_OK -> sendRegisterRequest(mAuth.currentUser!!.displayName)
+                RESULT_OK -> sendRegisterRequest(mAuth.currentUser!!.displayName,mAuth.currentUser!!.uid)
                 RESULT_CANCELED -> activity!!.onBackPressed()
             }
         }
@@ -99,8 +102,8 @@ class Start : Fragment() {
     }
 
     // 發送註冊請求
-    private fun sendRegisterRequest(name: String?) {
-        val data = mapOf(Pair("name",name),Pair("token",token))
+    private fun sendRegisterRequest(name: String?, uid: String) {
+        val data = mapOf(Pair("name",name),Pair("token",token),Pair("uid",uid))
         val request = RequestMessage("register",data)
         mFireBaseDatabaseRef.push().setValue(request)
     }
