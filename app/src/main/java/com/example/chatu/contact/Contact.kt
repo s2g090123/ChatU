@@ -1,10 +1,6 @@
 package com.example.chatu.contact
 
 
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
 import android.os.Bundle
 import android.view.*
 import android.widget.Toast
@@ -35,7 +31,6 @@ class Contact : Fragment() {
 
     private lateinit var viewModel: ContactViewModel
     private lateinit var broadcastManager: LocalBroadcastManager
-    private var intentFilter: IntentFilter? = null
     private lateinit var myName: String
     private lateinit var myUid: String
 
@@ -84,22 +79,6 @@ class Contact : Fragment() {
         super.onCreate(savedInstanceState)
         broadcastManager = LocalBroadcastManager.getInstance(requireNotNull(activity).application)
     }
-
-    override fun onStart() {
-        super.onStart()
-        // 註冊收到搜尋使用者結果的receiver
-        if(intentFilter == null) {
-            intentFilter = IntentFilter("Find")
-            broadcastManager.registerReceiver(receiver, intentFilter!!)
-        }
-    }
-
-    override fun onPause() {
-        super.onPause()
-        if(intentFilter != null)
-            broadcastManager.unregisterReceiver(receiver)
-    }
-
     override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
         inflater?.inflate(R.menu.contact_menu,menu)
         super.onCreateOptionsMenu(menu, inflater)
@@ -111,6 +90,7 @@ class Contact : Fragment() {
 
         when(item?.itemId) {
             R.id.menu_add_friend -> {
+                viewModel.closeSearch()
                 dialogBuilder.setNegativeButton("關閉") { dialog, _ -> run{
                     viewModel.closeSearch()
                     dialog.dismiss()
@@ -127,7 +107,7 @@ class Contact : Fragment() {
                         dialogViewBinding.findResult.visibility = View.GONE
                         if (uid.length == 8) {
                             dialogViewBinding.findFriendProgressbar.visibility = View.VISIBLE
-                            viewModel.searchFriend(uid,myUid)
+                            viewModel.sendFindFriendRequest(uid)
                         } else {
                             Toast.makeText(context, "輸入錯誤的UID格式", Toast.LENGTH_SHORT).show()
                         }
@@ -172,12 +152,5 @@ class Contact : Fragment() {
         dialog.window.attributes.windowAnimations = R.style.AlertDialogAnimation
         dialog.show()
         return super.onOptionsItemSelected(item)
-    }
-
-    private val receiver = object: BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            if(intent?.action == "Find")
-                viewModel.getFindFriendResult(intent.getStringExtra("uid"),intent.getStringExtra("name"))
-        }
     }
 }

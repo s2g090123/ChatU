@@ -58,11 +58,11 @@ class Start : Fragment() {
             val user = mAuth.currentUser
             if(user != null) {  // 早已註冊
                 if(isRegisted)
-                    startToContact(user.displayName)
+                    startToContact(sharedPref.getString("name","請重新安裝程式"))
                 else {  // 新註冊
                     val receiver = object: BroadcastReceiver() {
                         override fun onReceive(context: Context?, intent: Intent?) {
-                            startToContact(user.displayName)
+                            startToContact(sharedPref.getString("name","請重新安裝程式"))
                         }
                     }
                     LocalBroadcastManager.getInstance(context!!).registerReceiver(receiver,IntentFilter("register"))
@@ -72,7 +72,7 @@ class Start : Fragment() {
                 isRegisted = false
                 startActivityForResult(AuthUI.getInstance().createSignInIntentBuilder().setIsSmartLockEnabled(false)
                     .setAvailableProviders(listOf(AuthUI.IdpConfig.EmailBuilder().build(),AuthUI.IdpConfig.GoogleBuilder().build()
-                    ,AuthUI.IdpConfig.FacebookBuilder().build(),AuthUI.IdpConfig.GitHubBuilder().build()))
+                    ,AuthUI.IdpConfig.FacebookBuilder().build(),AuthUI.IdpConfig.PhoneBuilder().setDefaultCountryIso("TW").build()))
                     .setTheme(R.style.LoginTheme)
                     .setLogo(R.drawable.chatu_test_logo)
                     .build(),RC_SIGN_IN)
@@ -86,7 +86,10 @@ class Start : Fragment() {
         super.onActivityResult(requestCode, resultCode, data)
         if(requestCode == RC_SIGN_IN) {
             when(resultCode) {
-                RESULT_OK -> sendRegisterRequest(mAuth.currentUser!!.displayName,mAuth.currentUser!!.uid)
+                RESULT_OK -> {
+                    val userName = mAuth.currentUser!!.displayName ?: mAuth.currentUser!!.phoneNumber
+                    sendRegisterRequest(userName,mAuth.currentUser!!.uid)
+                }
                 RESULT_CANCELED -> activity!!.onBackPressed()
             }
         }
@@ -94,6 +97,7 @@ class Start : Fragment() {
 
     // 當獲取uid或早已存在uid，則轉向Contact畫面
     private fun startToContact(name: String?) {
+        binding.loginIcon.visibility = View.GONE
         binding.welcome.text = getString(R.string.welcome_text,name)
         Handler().postDelayed({
             val uid = sharedPref.getString("uid","重新開啟應用程式")

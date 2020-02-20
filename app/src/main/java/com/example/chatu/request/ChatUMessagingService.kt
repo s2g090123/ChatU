@@ -11,6 +11,7 @@ import android.graphics.Color
 import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Build
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.chatu.MainActivity
@@ -75,9 +76,6 @@ class ChatUMessagingService: FirebaseMessagingService() {
                         sendNotification("${data["note"]}:","傳了一個貼圖")
                 }
             }
-            "find" -> {
-                findResultBroadcast(data["to_uid"],data["name"])
-            }
             "invitation" -> {
                 val invitation = Gson().fromJson(data["data"],Invitation::class.java)
                 sendNotification("來自${invitation.name}","有一則好友邀請")
@@ -91,13 +89,6 @@ class ChatUMessagingService: FirebaseMessagingService() {
                 }
             }
         }
-    }
-
-    private fun findResultBroadcast(uid: String?, name: String?) {
-        val intent = Intent("Find")
-        intent.putExtra("uid",uid)
-        intent.putExtra("name",name)
-        broadcastManager.sendBroadcast(intent)
     }
 
     private fun sendNotification(title: String, body: String) {

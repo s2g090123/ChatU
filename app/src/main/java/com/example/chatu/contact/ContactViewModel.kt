@@ -21,7 +21,6 @@ class ContactViewModel(private val contactDao: ContactDao, private val invitatio
     private val coroutineScope = CoroutineScope(Dispatchers.Main + job)
 
     private val firebaseDatabase = FirebaseDatabase.getInstance()
-    private val databaseRef = firebaseDatabase.reference.child("requests")
     private val userRef = firebaseDatabase.reference.child("user")
 
     val contacts = contactDao.getAll()
@@ -70,19 +69,27 @@ class ContactViewModel(private val contactDao: ContactDao, private val invitatio
         _addRequestClicked.value = null
     }
 
-    // 傳送搜尋使用者request
-    fun searchFriend(uid: String, myUid: String) {
-        val request = RequestMessage("find",mapOf(Pair("from_uid",myUid), Pair("to_uid",uid)))
-        databaseRef.push().setValue(request)
+    // 尋找firebase db是否有此uid
+    fun sendFindFriendRequest(uid: String) {
+        userRef.child("$uid").addListenerForSingleValueEvent(object: ValueEventListener {
+            override fun onCancelled(p0: DatabaseError) {}
+            override fun onDataChange(p0: DataSnapshot) {
+                if(p0.exists()) {
+                    _searchName.value = p0.child("name").getValue(String::class.java)
+                    _searchUid.value = uid
+                }
+                else {
+                    _searchName.value = ""
+                    _searchUid.value = null
+                }
+            }
+        })
     }
-    // 獲取搜尋的結果
-    fun getFindFriendResult(uid: String?, name: String?) {
-        _searchName.value = name
-        _searchUid.value = uid
-    }
+
     // 關閉搜尋
     fun closeSearch() {
         _searchName.value = null
+        _searchUid.value = null
     }
 
     // 傳送交友邀請

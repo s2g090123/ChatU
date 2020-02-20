@@ -8,7 +8,7 @@ interface ChatMessageDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insert(message: ChatMessage)
 
-    @Query("Select * from chat_message_table where (from_uid= :me AND to_uid= :other) OR from_uid= :other")
+    @Query("Select * from chat_message_table where (from_uid= :me AND to_uid= :other) OR from_uid= :other Order by send_time")
     fun get(me: String, other: String): LiveData<List<ChatMessage>>
 
     @Query("Select * from chat_message_table Order by send_time")
